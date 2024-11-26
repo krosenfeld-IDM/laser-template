@@ -15,18 +15,18 @@ project = "laser_measles"
 year = "2024"
 author = "Institute for Disease Modeling"
 copyright = f"{year}, Bill & Melinda Gates Foundation"
-version = release = "0.6.0"
+version = release = "0.1.0"
 
 pygments_style = "trac"
 templates_path = ["."]
 extlinks = {
-    "issue": ("https://github.com/InstituteforDiseaseModeling/laser-measles/issues/%s", "#%s"),
-    "pr": ("https://github.com/InstituteforDiseaseModeling/laser-measles/pull/%s", "PR #%s"),
+    "issue": ("https://github.com/InstituteforDiseaseModeling/laser-template/issues/%s", "#%s"),
+    "pr": ("https://github.com/InstituteforDiseaseModeling/laser-template/pull/%s", "PR #%s"),
 }
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    # "githuburl": "https://github.com/InstituteforDiseaseModeling/laser-measles/",
+    # "githuburl": "https://github.com/InstituteforDiseaseModeling/laser-template/",
 }
 
 html_use_smartypants = True
