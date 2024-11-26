@@ -1,9 +1,8 @@
 """
-This module defines the `Model` class for simulating the spread of measles using a gravity model for migration and
-demographic data for population initialization.
+This module defines the `Model` class for simulation
 
 Classes:
-    Model: A class to represent the measles simulation model.
+    Model: A class to represent the simulation model.
 
 Imports:
     - datetime: For handling date and time operations.
@@ -24,7 +23,7 @@ Imports:
 
 Model Class:
     Methods:
-        __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "measles") -> None:
+        __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "template") -> None:
             Initializes the model with the given scenario and parameters.
 
         components(self) -> list:
@@ -63,20 +62,16 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from tqdm import tqdm
 
-from laser_measles import Births
-from laser_measles.utils import calc_capacity
-from laser_measles.utils import calc_distances
-
 
 class Model:
     """
-    A class to represent a simulation model for measles spread.
+    A class to represent a simulation model.
 
     Args:
 
         scenario (pd.DataFrame): A DataFrame containing the scenario data, including population, latitude, and longitude.
-        parameters (PropertySet): A set of parameters for the model, including seed, nticks, k, a, b, c, max_frac, cbr, verbose, and pyramid_file.
-        name (str, optional): The name of the model. Defaults to "measles".
+        parameters (PropertySet): A set of parameters for the model.
+        name (str, optional): The name of the model. Defaults to "template".
 
     Notes:
 
@@ -88,7 +83,7 @@ class Model:
             - `longitude` (float degrees): The longitude of the patch (e.g., from geographic or population centroid).
     """
 
-    def __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "measles") -> None:
+    def __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "template") -> None:
         """
         Initialize the disease model with the given scenario and parameters.
 
@@ -96,7 +91,7 @@ class Model:
 
             scenario (pd.DataFrame): A DataFrame containing the scenario data, including population, latitude, and longitude.
             parameters (PropertySet): A set of parameters for the model, including seed, nticks, k, a, b, c, max_frac, cbr, verbose, and pyramid_file.
-            name (str, optional): The name of the model. Defaults to "measles".
+            name (str, optional): The name of the model. Defaults to "template".
 
         Returns:
 
@@ -109,69 +104,12 @@ class Model:
         self.params = parameters
         self.name = name
 
+        # seed the random number generator
         self.prng = seed_prng(parameters.seed if parameters.seed is not None else self.tinit.microsecond)
 
         click.echo(f"Initializing the {name} model with {len(scenario)} patches…")
 
-        if parameters.verbose:
-            click.echo(f"Counties: {scenario.name.values[0:4]}...")
-            click.echo(f"Populations: {scenario.population.values[0:4]}...")
-            click.echo(f"Lat/longs: {list(zip(scenario.latitude.values, scenario.longitude.values))[0:4]}...")
-
-        # We need some patches with population data ...
-        npatches = len(scenario)
-        self.patches = LaserFrame(npatches)
-
-        # "activate" all the patches (count == capacity)
-        self.patches.add(npatches)
-        self.patches.add_vector_property("populations", length=parameters.nticks + 1)
-        # set patch populations at t = 0 to initial populations
-        self.patches.populations[0, :] = scenario.population
-
-        # ... and connectivity data
-        distances = calc_distances(scenario.latitude.values, scenario.longitude.values, parameters.verbose)
-        network = gravity(
-            scenario.population.values,
-            distances,
-            parameters.k,
-            parameters.a,
-            parameters.b,
-            parameters.c,
-        )
-        network = row_normalizer(network, parameters.max_frac)
-        self.patches.add_vector_property("network", length=npatches, dtype=np.float32)
-        self.patches.network[:, :] = network
-
-        # Initialize the model population
-
-        capacity = calc_capacity(self.patches.populations[0, :].sum(), parameters.nticks, parameters.cbr, parameters.verbose)
-        self.population = LaserFrame(capacity)
-
-        self.population.add_scalar_property("nodeid", dtype=np.uint16)
-        for nodeid, count in enumerate(self.patches.populations[0, :]):
-            first, last = self.population.add(count)
-            self.population.nodeid[first:last] = nodeid
-
-        # Initialize population ages
-
-        pyramid_file = parameters.pyramid_file
-        age_distribution = load_pyramid_csv(pyramid_file)
-        both = age_distribution[:, 2] + age_distribution[:, 3]  # males + females
-        sampler = AliasedDistribution(both)
-        bin_min_age_days = age_distribution[:, 0] * 365  # minimum age for bin, in days (include this value)
-        bin_max_age_days = (age_distribution[:, 1] + 1) * 365  # maximum age for bin, in days (exclude this value)
-        initial_pop = self.population.count
-        samples = sampler.sample(initial_pop)  # sample for bins from pyramid
-        self.population.add_scalar_property("dob", dtype=np.int32)
-        mask = np.zeros(initial_pop, dtype=bool)
-        dobs = self.population.dob[0:initial_pop]
-        click.echo("Assigning day of year of birth to agents…")
-        for i in tqdm(range(len(age_distribution))):  # for each possible bin value...
-            mask[:] = samples == i  # ...find the agents that belong to this bin
-            # ...and assign a random age, in days, within the bin
-            dobs[mask] = self.prng.integers(bin_min_age_days[i], bin_max_age_days[i], mask.sum())
-
-        dobs *= -1  # convert ages to date of birth prior to _now_ (t = 0) ∴ negative
+        # TODO: Initialize the model here
 
         return
 
@@ -193,7 +131,6 @@ class Model:
         Sets up the components of the model and initializes instances and phases.
 
         This function takes a list of component types, creates an instance of each, and adds each callable component to the phase list.
-        It also registers any components with an `on_birth` function with the `Births` component.
 
         Args:
 
@@ -213,18 +150,11 @@ class Model:
             if "__call__" in dir(instance):
                 self.phases.append(instance)
 
-        births = next(filter(lambda object: isinstance(object, Births), self.instances))
-        # TODO: raise an exception if there are components with an on_birth function but no Births component
-        for instance in self.instances:
-            if "on_birth" in dir(instance):
-                births.initializers.append(instance)
         return
 
     def __call__(self, model, tick: int) -> None:
         """
-        Updates the population of patches for the next tick. Copies the previous
-        population data to the next tick to be updated, optionally, by a Birth and/or
-        Mortality component.
+        Updates the model for the next tick.
 
         Args:
 
@@ -236,7 +166,6 @@ class Model:
             None
         """
 
-        model.patches.populations[tick + 1, :] = model.patches.populations[tick, :]
         return
 
     def run(self) -> None:
@@ -340,44 +269,9 @@ class Model:
         """
 
         _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
-        _fig.suptitle("Scenario Patches and Populations")
-        if "geometry" in self.scenario.columns:
-            ax = plt.gca()
-            self.scenario.plot(ax=ax)
-        scatter = plt.scatter(
-            self.scenario.longitude,
-            self.scenario.latitude,
-            s=self.scenario.population / 1000,
-            c=self.scenario.population,
-            cmap="inferno",
-        )
-        plt.colorbar(scatter, label="Population")
+        _fig.suptitle("Example Figure")
+        plt.plot(np.arange(50), np.cos(2*np.pi*np.arange(50)/50))
 
         yield
 
-        _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
-        _fig.suptitle("Distribution of Day of Birth for Initial Population")
-
-        count = self.patches.populations[0, :].sum()  # just the initial population
-        dobs = self.population.dob[0:count]
-        plt.hist(dobs, bins=100)
-        plt.xlabel("Day of Birth")
-
-        yield
-
-        _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
-
-        metrics = pd.DataFrame(self.metrics, columns=["tick"] + [type(phase).__name__ for phase in self.phases])
-        plot_columns = metrics.columns[1:]
-        sum_columns = metrics[plot_columns].sum()
-
-        plt.pie(
-            sum_columns,
-            labels=[name if not name.startswith("do_") else name[3:] for name in sum_columns.index],
-            autopct="%1.1f%%",
-            startangle=140,
-        )
-        plt.title("Update Phase Times")
-
-        yield
         return

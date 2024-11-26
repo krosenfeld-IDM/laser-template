@@ -3,13 +3,12 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "laser-measles"
-version = "0.6.0"
+name = "laser-template"
+version = "0.1.0"
 
 dependencies = [
   "laser-core @ git+https://github.com/InstituteforDiseaseModeling/laser.git@v0.1.0",
-  "geopandas"
-  ]
+]
 
 requires-python = ">= 3.9"
 
@@ -48,15 +47,14 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://example.com"
-Documentation = "https://laser-measles.readthedocs.io/en/latest/"
-Repository = "https://github.com/InstituteforDiseaseModeling/laser-measles.git"
-Issues = "https://github.com/InstituteforDiseaseModeling/laser-measles/issues"
-Changelog = "https://github.com/InstituteforDiseaseModeling/laser-measles/blob/master/CHANGELOG.md"
+# Documentation = "https://laser-template.readthedocs.io/en/latest/"
+# Repository = "https://github.com/InstituteforDiseaseModeling/laser-template.git"
+Issues = "https://github.com/InstituteforDiseaseModeling/lasertemplate/issues"
+Changelog = "https://github.com/InstituteforDiseaseModeling/laser-template/blob/master/CHANGELOG.md"
 
 [project.scripts]
-cli = "laser_measles.cli:run"
-nigeria = "laser_measles.nigeria.model:run"
-measles = "laser_measles.generic.model:run"
+cli = "laser_template.cli:run"
+laser = "laser_model.generic.model:run"
 
 [tool.ruff]
 extend-exclude = ["static", "ci/templates"]

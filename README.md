@@ -1,10 +1,9 @@
-# MASER - Measles Simulation for ERadication
-
-Spatial measles models implemented with the LASER toolkit.
+# laser-template
+Template for producing models implemented with the LASER toolkit.
 
 ## Development notes
 
-For linting I find it useful to intall [pre-commit](https://pre-commit.com/) and [ruff](https://docs.astral.sh/ruff/) and then, before committing to github, running:
+For linting you find it useful to intall [pre-commit](https://pre-commit.com/) and [ruff](https://docs.astral.sh/ruff/) and then, before committing to github, running:
 
 ```
 pre-commit run --all-file

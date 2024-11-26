@@ -1,7 +1,7 @@
 r"""
-measles_model.py
+model.py
 
-This module defines the base Measles Model and provides a command-line interface (CLI) to run the simulation.
+This module defines the base Model and provides a command-line interface (CLI) to run the simulation.
 
 Classes:
 
@@ -11,7 +11,7 @@ Functions:
 
     run(\*\*kwargs)
 
-        Runs the measles model simulation with the specified parameters.
+        Runs the model simulation with the specified parameters.
 
         Parameters:
 
@@ -28,27 +28,18 @@ Usage:
 
     To run the simulation from the command line (365 ticks, 20241107 seed, show visualizations):
 
-        ``measles``
+        ``laser``
 
     To run the simulation with custom parameters, e.g., 5 years, 314159265 seed, output to PDF:
 
-        ``measles --nticks 1825 --seed 314159265 --pdf``
+        ``laser --nticks 1825 --seed 314159265 --pdf``
 """
 
 import click
-
-from laser_measles import Births
-from laser_measles import Incubation
-from laser_measles import Infection
-from laser_measles import MaternalAntibodies
-from laser_measles import Model
-from laser_measles import NonDiseaseDeaths
-from laser_measles import RoutineImmunization
-from laser_measles import Susceptibility
-from laser_measles import Transmission
-from laser_measles.generic import get_parameters
-from laser_measles.generic import get_scenario
-from laser_measles.utils import seed_infections_in_patch
+import pandas as pd
+from laser_core.propertyset import PropertySet
+from .params import get_parameters
+from laser_model import Model
 
 
 @click.command()
@@ -62,7 +53,7 @@ from laser_measles.utils import seed_infections_in_patch
 @click.option("--param", "-p", multiple=True, help="Additional parameter overrides (param:value or param=value)")
 def run(**kwargs):
     """
-    Run the measles model simulation with the given parameters.
+    Run the model simulation with the given parameters.
 
     This function initializes the model with the specified parameters, sets up the
     components of the model, seeds initial infections, runs the simulation, and
@@ -83,27 +74,11 @@ def run(**kwargs):
         None
     """
 
+    scenario = pd.DataFrame({"node": [0, 1, 2]})
     parameters = get_parameters(kwargs)
-    scenario = get_scenario(parameters, parameters["verbose"])
     model = Model(scenario, parameters)
 
-    # infection dynamics come _before_ incubation dynamics so newly set itimers
-    # don't immediately expire
-    model.components = [
-        Births,
-        NonDiseaseDeaths,
-        Susceptibility,
-        MaternalAntibodies,
-        RoutineImmunization,
-        Infection,
-        Incubation,
-        Transmission,
-    ]
-
-    # seed_infections_randomly(model, ninfections=100)
-    # Seed initial infections in Node 13 (King County) at the start of the simulation
-    # Pierce County is Node 18, Snohomish County is Node 14, Yakima County is 19
-    seed_infections_in_patch(model, ipatch=13, ninfections=100)
+    model.components = []
 
     model.run()
 
