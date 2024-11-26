@@ -50,11 +50,6 @@ from datetime import datetime
 import click
 import numpy as np
 import pandas as pd
-from laser_core.demographics import AliasedDistribution
-from laser_core.demographics import load_pyramid_csv
-from laser_core.laserframe import LaserFrame
-from laser_core.migration import gravity
-from laser_core.migration import row_normalizer
 from laser_core.propertyset import PropertySet
 from laser_core.random import seed as seed_prng
 from matplotlib import pyplot as plt
@@ -270,7 +265,7 @@ class Model:
 
         _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
         _fig.suptitle("Example Figure")
-        plt.plot(np.arange(50), np.cos(2*np.pi*np.arange(50)/50))
+        plt.plot(np.arange(50), np.cos(2 * np.pi * np.arange(50) / 50))
 
         yield
 

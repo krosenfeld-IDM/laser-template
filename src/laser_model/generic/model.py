@@ -37,9 +37,10 @@ Usage:
 
 import click
 import pandas as pd
-from laser_core.propertyset import PropertySet
-from .params import get_parameters
+
 from laser_model import Model
+
+from .params import get_parameters
 
 
 @click.command()

@@ -10,8 +10,8 @@ uv venv
 source .venv/bin/activate
 ```
 1. Install
-``` 
-uv pip install -e . 
+```
+uv pip install -e .
 ```
 2. Test that the model runs (`laser --help` for options)
 ```
