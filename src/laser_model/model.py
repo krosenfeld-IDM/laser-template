@@ -1,9 +1,8 @@
 """
-This module defines the `Model` class for simulating the spread of measles using a gravity model for migration and
-demographic data for population initialization.
+This module defines the `Model` class for simulation
 
 Classes:
-    Model: A class to represent the measles simulation model.
+    Model: A class to represent the simulation model.
 
 Imports:
     - datetime: For handling date and time operations.
@@ -24,7 +23,7 @@ Imports:
 
 Model Class:
     Methods:
-        __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "measles") -> None:
+        __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "template") -> None:
             Initializes the model with the given scenario and parameters.
 
         components(self) -> list:
@@ -70,13 +69,13 @@ from laser_measles.utils import calc_distances
 
 class Model:
     """
-    A class to represent a simulation model for measles spread.
+    A class to represent a simulation model.
 
     Args:
 
         scenario (pd.DataFrame): A DataFrame containing the scenario data, including population, latitude, and longitude.
-        parameters (PropertySet): A set of parameters for the model, including seed, nticks, k, a, b, c, max_frac, cbr, verbose, and pyramid_file.
-        name (str, optional): The name of the model. Defaults to "measles".
+        parameters (PropertySet): A set of parameters for the model.
+        name (str, optional): The name of the model. Defaults to "template".
 
     Notes:
 
@@ -88,7 +87,7 @@ class Model:
             - `longitude` (float degrees): The longitude of the patch (e.g., from geographic or population centroid).
     """
 
-    def __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "measles") -> None:
+    def __init__(self, scenario: pd.DataFrame, parameters: PropertySet, name: str = "template") -> None:
         """
         Initialize the disease model with the given scenario and parameters.
 
@@ -96,7 +95,7 @@ class Model:
 
             scenario (pd.DataFrame): A DataFrame containing the scenario data, including population, latitude, and longitude.
             parameters (PropertySet): A set of parameters for the model, including seed, nticks, k, a, b, c, max_frac, cbr, verbose, and pyramid_file.
-            name (str, optional): The name of the model. Defaults to "measles".
+            name (str, optional): The name of the model. Defaults to "template".
 
         Returns:
 
