@@ -1,7 +1,7 @@
-laser_measles
-=============
+laser_model
+===========
 
 .. toctree::
    :maxdepth: 4
 
-   laser_measles
+   laser_model
