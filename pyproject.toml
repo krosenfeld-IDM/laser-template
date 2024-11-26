@@ -24,7 +24,7 @@ maintainers = [
 description = "Model template for the LASER toolkit."
 readme = "README.md"
 license = {file = "LICENSE"}
-keywords = ["measles", "spatial", "modeling", "laser"]
+keywords = ["spatial", "modeling", "laser"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -144,7 +144,7 @@ search = 'version = release = "{current_version}"'
 replace = 'version = release = "{new_version}"'
 
 [[tool.bumpversion.files]]
-filename = "src/laser_measles/__init__.py"
+filename = "src/laser_model/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
