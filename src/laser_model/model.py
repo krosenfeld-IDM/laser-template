@@ -62,10 +62,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from tqdm import tqdm
 
-from laser_measles import Births
-from laser_measles.utils import calc_capacity
-from laser_measles.utils import calc_distances
-
 
 class Model:
     """
@@ -108,69 +104,12 @@ class Model:
         self.params = parameters
         self.name = name
 
+        # seed the random number generator
         self.prng = seed_prng(parameters.seed if parameters.seed is not None else self.tinit.microsecond)
 
         click.echo(f"Initializing the {name} model with {len(scenario)} patches…")
 
-        if parameters.verbose:
-            click.echo(f"Counties: {scenario.name.values[0:4]}...")
-            click.echo(f"Populations: {scenario.population.values[0:4]}...")
-            click.echo(f"Lat/longs: {list(zip(scenario.latitude.values, scenario.longitude.values))[0:4]}...")
-
-        # We need some patches with population data ...
-        npatches = len(scenario)
-        self.patches = LaserFrame(npatches)
-
-        # "activate" all the patches (count == capacity)
-        self.patches.add(npatches)
-        self.patches.add_vector_property("populations", length=parameters.nticks + 1)
-        # set patch populations at t = 0 to initial populations
-        self.patches.populations[0, :] = scenario.population
-
-        # ... and connectivity data
-        distances = calc_distances(scenario.latitude.values, scenario.longitude.values, parameters.verbose)
-        network = gravity(
-            scenario.population.values,
-            distances,
-            parameters.k,
-            parameters.a,
-            parameters.b,
-            parameters.c,
-        )
-        network = row_normalizer(network, parameters.max_frac)
-        self.patches.add_vector_property("network", length=npatches, dtype=np.float32)
-        self.patches.network[:, :] = network
-
-        # Initialize the model population
-
-        capacity = calc_capacity(self.patches.populations[0, :].sum(), parameters.nticks, parameters.cbr, parameters.verbose)
-        self.population = LaserFrame(capacity)
-
-        self.population.add_scalar_property("nodeid", dtype=np.uint16)
-        for nodeid, count in enumerate(self.patches.populations[0, :]):
-            first, last = self.population.add(count)
-            self.population.nodeid[first:last] = nodeid
-
-        # Initialize population ages
-
-        pyramid_file = parameters.pyramid_file
-        age_distribution = load_pyramid_csv(pyramid_file)
-        both = age_distribution[:, 2] + age_distribution[:, 3]  # males + females
-        sampler = AliasedDistribution(both)
-        bin_min_age_days = age_distribution[:, 0] * 365  # minimum age for bin, in days (include this value)
-        bin_max_age_days = (age_distribution[:, 1] + 1) * 365  # maximum age for bin, in days (exclude this value)
-        initial_pop = self.population.count
-        samples = sampler.sample(initial_pop)  # sample for bins from pyramid
-        self.population.add_scalar_property("dob", dtype=np.int32)
-        mask = np.zeros(initial_pop, dtype=bool)
-        dobs = self.population.dob[0:initial_pop]
-        click.echo("Assigning day of year of birth to agents…")
-        for i in tqdm(range(len(age_distribution))):  # for each possible bin value...
-            mask[:] = samples == i  # ...find the agents that belong to this bin
-            # ...and assign a random age, in days, within the bin
-            dobs[mask] = self.prng.integers(bin_min_age_days[i], bin_max_age_days[i], mask.sum())
-
-        dobs *= -1  # convert ages to date of birth prior to _now_ (t = 0) ∴ negative
+        # TODO: Initialize the model here
 
         return
 
