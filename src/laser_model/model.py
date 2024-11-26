@@ -154,9 +154,7 @@ class Model:
 
     def __call__(self, model, tick: int) -> None:
         """
-        Updates the population of patches for the next tick. Copies the previous
-        population data to the next tick to be updated, optionally, by a Birth and/or
-        Mortality component.
+        Updates the model for the next tick.
 
         Args:
 
@@ -168,7 +166,6 @@ class Model:
             None
         """
 
-        model.patches.populations[tick + 1, :] = model.patches.populations[tick, :]
         return
 
     def run(self) -> None:
@@ -272,44 +269,9 @@ class Model:
         """
 
         _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
-        _fig.suptitle("Scenario Patches and Populations")
-        if "geometry" in self.scenario.columns:
-            ax = plt.gca()
-            self.scenario.plot(ax=ax)
-        scatter = plt.scatter(
-            self.scenario.longitude,
-            self.scenario.latitude,
-            s=self.scenario.population / 1000,
-            c=self.scenario.population,
-            cmap="inferno",
-        )
-        plt.colorbar(scatter, label="Population")
+        _fig.suptitle("Example Figure")
+        plt.plot(np.arange(50), np.cos(2*np.pi*np.arange(50)/50))
 
         yield
 
-        _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
-        _fig.suptitle("Distribution of Day of Birth for Initial Population")
-
-        count = self.patches.populations[0, :].sum()  # just the initial population
-        dobs = self.population.dob[0:count]
-        plt.hist(dobs, bins=100)
-        plt.xlabel("Day of Birth")
-
-        yield
-
-        _fig = plt.figure(figsize=(12, 9), dpi=128) if fig is None else fig
-
-        metrics = pd.DataFrame(self.metrics, columns=["tick"] + [type(phase).__name__ for phase in self.phases])
-        plot_columns = metrics.columns[1:]
-        sum_columns = metrics[plot_columns].sum()
-
-        plt.pie(
-            sum_columns,
-            labels=[name if not name.startswith("do_") else name[3:] for name in sum_columns.index],
-            autopct="%1.1f%%",
-            startangle=140,
-        )
-        plt.title("Update Phase Times")
-
-        yield
         return
