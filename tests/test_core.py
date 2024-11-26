@@ -1,4 +1,4 @@
-from laser_measles import compute
+from laser_model import compute
 
 
 def test_compute():
