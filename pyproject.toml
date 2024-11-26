@@ -7,7 +7,7 @@ name = "laser-template"
 version = "0.1.0"
 
 dependencies = [
-  "laser-core @ git+https://github.com/InstituteforDiseaseModeling/laser.git@v0.1.0",
+  "laser-core @ git+https://github.com/InstituteforDiseaseModeling/laser.git",
 ]
 
 requires-python = ">= 3.9"
@@ -21,7 +21,7 @@ authors = [
 maintainers = [
   {name = "Christopher Lorton", email = "christopher.lorton@gatesfoundation.org"}
 ]
-description = "Spatial models of measles implemented with the LASER toolkit."
+description = "Model template for the LASER toolkit."
 readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["measles", "spatial", "modeling", "laser"]
