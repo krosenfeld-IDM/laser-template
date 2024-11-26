@@ -131,7 +131,6 @@ class Model:
         Sets up the components of the model and initializes instances and phases.
 
         This function takes a list of component types, creates an instance of each, and adds each callable component to the phase list.
-        It also registers any components with an `on_birth` function with the `Births` component.
 
         Args:
 
